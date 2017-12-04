@@ -29,20 +29,47 @@ export default class PanoramaSphere extends Mesh {
       side: DoubleSide,
       color: 0xffffff
     })
+
+    // this.material = new ShaderMaterial({
+    //   uniforms: {
+    //     texture1: {
+    //       value: transparentTex
+    //     },
+    //     texture2: {
+    //       value: transparentTex
+    //     }
+    //   },
+    //   vertexShader: [
+    //     ""
+    //   ].join('\n'),
+    //   fragmentShader: [
+    //     ""
+    //   ].join()
+    // })
     this.name = 'panoramaSphere'
     this._radius = radius
   }
 
-  loadTextureImage (src = '', imageConfig = SPHERE_LOW_SHARPEN, loadSuccessCallback: Function, loadProgressCallback: Function, loadFailCallback: Function) {
+  loadTextureImage (src = '', imageConfig = SPHERE_LOW_SHARPEN, loadSuccessCallback: Function, loadProgressCallback: Function, loadErrorCallback: Function) {
     if (this.material.map && !src || this.material.map && src === this.material.map.image.src) {
       return this.material.map
+    }
+
+    if (loadSuccessCallback) {
+      this._successCallback = loadSuccessCallback
+    }
+    if (loadProgressCallback) {
+      this._progressCallback = loadProgressCallback
+    }
+    if (loadErrorCallback) {
+      this._errorCallback = loadErrorCallback
     }
 
     let _tmpTexture = textureLoader.load(
       oss(src, imageConfig),
       this.loadSuccess.bind(this, loadSuccessCallback),
       this.loadProgress.bind(this, loadProgressCallback),
-      this.loadFail.bind(this, loadFailCallback)
+      this.loadError.bind(this, loadErrorCallback)
     )
     _tmpTexture.magFilter = NearestFilter
     _tmpTexture.minFilter = LinearFilter
@@ -97,7 +124,7 @@ export default class PanoramaSphere extends Mesh {
   }
 
   // 加载全景图失败的回调
-  loadFail (callback = this._errorCallback, e: Event) {
+  loadError (callback = this._errorCallback, e: Event) {
     callback()
   }
 

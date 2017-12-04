@@ -1,24 +1,45 @@
-import { Viewer } from './components/Viewer';
+import { Viewer } from './components/Viewer'
+import { SPHERE_ORIGIN_SHARPEN } from './components/constants';
+import NavigationBar from './ui/NavigationBar/NavigationBar';
 
-initUI()
-initViewer()
+const data = initData()
+const ui = initUI()
+const viewer = initViewer()
 
 function initViewer() {
-  let viewer =  new Viewer({
-      antialias: true
+  const viewer =  new Viewer({
+      antialias: false
     }, {
-      autoRotate: true,
+      autoRotate: false,
     }
   )
 
-  let src = "https://ossgw.alicdn.com/v3d-scene-go/cubemap/af5fb903afe6eeabd1ab7e78bd2add0c/image_panorama/pano.jpg"
+  const src = 'https://ossgw.alicdn.com/v3d-scene-go/cubemap/af5fb903afe6eeabd1ab7e78bd2add0c/image_panorama/pano.jpg'
 
-  viewer.panoramaSphere(src)
+  viewer.panoramaSphere(src, SPHERE_ORIGIN_SHARPEN)
   viewer.startAnimate()
-  console.log(viewer);
+
+  return viewer
 }
 
 function initUI () {
-  let html = document.documentElement
-  let body = document.body
+  const navClickCallback = handleNavClick
+  const navigationBar = new NavigationBar(navClickCallback)
+  return {
+    NavigationBar
+  }
+}
+
+function initData () {
+
+}
+
+function handleNavClick (key: number) {
+  let src = ''
+  if (key === 1) {
+    src = 'https://ossgw.alicdn.com/v3d-scene-go/cubemap/af5fb903afe6eeabd1ab7e78bd2add0c/image_panorama/pano.jpg'
+  } else if (key === 2) {
+    src = 'https://ossgw.alicdn.com/scenego-inner/cubemap/376296fd-fb47-442b-ba29-4a0f8d0b80eb/image_panorama/pano.jpg'
+  }
+  viewer.panoramaSphere(src, SPHERE_ORIGIN_SHARPEN)
 }

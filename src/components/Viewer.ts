@@ -18,7 +18,7 @@ export class Viewer {
   private _radius: number
 
   private _scene: Scene
-  private _camera: Camera
+  private _camera: PerspectiveCamera
   private _renderer: WebGLRenderer
   private _sphere: Sphere
   
@@ -37,6 +37,8 @@ export class Viewer {
     this.initCamera(this._littlePlanet, this._dom)
     this.initScene()
     this.initRenderer(webglParameters, this._dom)
+
+    window.addEventListener('resize', this.handleResize.bind(this, this._dom), false)
   }
 
   private initCamera (littlePlanet: boolean, dom: HTMLElement): Viewer {
@@ -100,6 +102,13 @@ export class Viewer {
     this._renderer.setSize(dom.clientWidth, dom.clientHeight)
     dom.appendChild(this._renderer.domElement)
     return this
+  }
+
+  private handleResize(dom: HTMLElement) : void {
+    this._camera.aspect = dom.clientWidth / dom.clientHeight
+    this._camera.updateProjectionMatrix()
+
+    this._renderer.setSize(dom.clientWidth, dom.clientHeight)
   }
 
   public startAnimate (): Viewer {
