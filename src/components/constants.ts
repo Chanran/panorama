@@ -16,6 +16,10 @@ export const SPHERE_LOW_SHARPEN = [{
 }]
 
 export const SPHERE_ORIGIN_SHARPEN = [{
+  resize: {
+    w: 4096,
+    h: 2048
+  },
   sharpen: 50,
   quality: {
     Q: 80
@@ -23,12 +27,14 @@ export const SPHERE_ORIGIN_SHARPEN = [{
 }]
 
 export const transparentTex = (() => {
-  let bitmap = document.createElement('canvas')
+  let bitmap: HTMLCanvasElement = document.createElement('canvas')
   bitmap.width = 16
   bitmap.height = 16
-  let ctx = bitmap.getContext('2d')
-  ctx.fillStyle = 'rgba(0,0,0,0)'
-  ctx.fillRect(0,0,16,16)
+  let ctx: CanvasRenderingContext2D | null = bitmap.getContext('2d')
+  if (ctx) {
+    ctx.fillStyle = 'rgba(0,0,0,0)'
+    ctx.fillRect(0,0,16,16)
+  }
   return new Texture(bitmap)
 })()
 

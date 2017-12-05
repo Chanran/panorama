@@ -2,8 +2,9 @@ import { Viewer } from './components/Viewer'
 import { SPHERE_ORIGIN_SHARPEN } from './components/constants';
 import NavigationBar from './ui/NavigationBar/NavigationBar';
 
-const data = initData()
-const ui = initUI()
+// const data = initData()
+// const ui = initUI()
+initUI()
 const viewer = initViewer()
 
 function initViewer() {
@@ -30,9 +31,9 @@ function initUI () {
   }
 }
 
-function initData () {
+// function initData () {
 
-}
+// }
 
 function handleNavClick (key: number) {
   let src = ''

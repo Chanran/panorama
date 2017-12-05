@@ -1,4 +1,4 @@
-import { Scene, Camera, Renderer, PerspectiveCamera, Color, WebGLRenderer, WebGLRendererParameters, error, Clock } from 'three'
+import { Scene, PerspectiveCamera, Color, WebGLRenderer, WebGLRendererParameters, Clock } from 'three'
 
 import Sphere from './PanoramaSphere'
 
@@ -77,7 +77,7 @@ export class Viewer {
       aspect,
       near,
       far,
-      position
+      position = {x : 0, y : 0, z : 0}
     } = parameters
     this._camera = new PerspectiveCamera(
       fov,
@@ -150,7 +150,12 @@ export class Viewer {
       this._sphere.loadTextureImage(src, imageConfig, success, progressCallback, errorCallback)
       this._scene.add(this._sphere)
     } else {
-      this._sphere.loadTextureImage(src, imageConfig, successCallback, progressCallback, errorCallback)
+      const success = () => {
+        this._sphere.setMixTexture()
+        this._renderer.render(this._scene, this._camera)
+        successCallback && successCallback()
+      }
+      this._sphere.loadTextureImage(src, imageConfig, success, progressCallback, errorCallback)
     }
     return this
   }
