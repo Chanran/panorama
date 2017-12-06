@@ -11,7 +11,9 @@ module.exports = {
     inline: true,
     filename: 'bundle.js',
     publicPath: '/dist/',
-    disableHostCheck: true
+    disableHostCheck: true,
+    port: 8080,
+    host: '0.0.0.0'
   },
   module: {
     rules: [
