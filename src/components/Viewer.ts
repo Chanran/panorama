@@ -150,8 +150,17 @@ export class Viewer {
       this._sphere.loadTextureImage(src, imageConfig, success, progressCallback, errorCallback)
       this._scene.add(this._sphere)
     } else {
+      let flag = true
+      const onMixUpdate = (progress: number) => {
+        if (flag) {
+          console.log(flag);
+          this._camera.rotation.y += Math.PI / 2
+          flag = false
+        }
+      }
+
       const success = () => {
-        this._sphere.setMixTexture()
+        this._sphere.setMixTexture(undefined, onMixUpdate)
         this._renderer.render(this._scene, this._camera)
         successCallback && successCallback()
       }

@@ -138,7 +138,7 @@ export default class PanoramaSphere extends Mesh {
     this.material.uniforms.texture0.value.wrapT = RepeatWrapping
   }
 
-  setMixTexture (texture: Texture = this._sphereTexture) {
+  setMixTexture (texture: Texture = this._sphereTexture, onUpdateCallback?: Function) {
     this.material.uniforms.texture1.value = texture
     this.material.uniforms.texture1.value.wrapS = RepeatWrapping
     this.material.uniforms.texture1.value.wrapT = RepeatWrapping
@@ -147,10 +147,12 @@ export default class PanoramaSphere extends Mesh {
     }
     new TWEEN.Tween(alpha)
         .to({value: 1}, 1000)
-        .easing(TWEEN.Easing.Linear.None)
+        // .easing(TWEEN.Easing.Linear.None)
+        .easing(TWEEN.Easing.Quadratic.InOut)
         .onUpdate(() => {
           console.log(alpha.value);
           this.material.uniforms.alpha.value = alpha.value
+          onUpdateCallback && onUpdateCallback(alpha.value)
         })
         .onComplete(() => {
           const uniforms = this.material.uniforms
