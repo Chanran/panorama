@@ -146,9 +146,8 @@ export default class PanoramaSphere extends Mesh {
       value: 0
     }
     new TWEEN.Tween(alpha)
-        .to({value: 1}, 1000)
-        // .easing(TWEEN.Easing.Linear.None)
-        .easing(TWEEN.Easing.Quadratic.InOut)
+        .to({value: 1}, 3000)
+        .easing(TWEEN.Easing.Cubic.Out)
         .onUpdate(() => {
           console.log(alpha.value);
           this.material.uniforms.alpha.value = alpha.value
