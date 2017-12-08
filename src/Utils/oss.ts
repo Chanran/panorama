@@ -4,7 +4,8 @@ const operationFunc: any = {
   contrast: contrastOperation,
   sharpen: sharpenOperation,
   quality: qualityOperation,
-  crop: cropOperation
+  crop: cropOperation,
+  blur: blurOperation
 }
 
 export default function oss (originUrl: string, configs: any = []) {
@@ -113,6 +114,26 @@ function cropOperation (crop: any) {
   Object.keys(crop).map(cropKey => {
     isFormatted = true
     result += `${cropKey}_${crop[cropKey]},`
+  })
+
+  if (result.length > 0 && result[result.length - 1] === ',') {
+    result = result.substring(0, result.length - 1)
+  }
+
+  return isFormatted ? result : ''
+}
+
+function blurOperation (blur: any) {
+  if (!blur) {
+    return ''
+  }
+
+  let result = 'blur,'
+  let isFormatted = false
+
+  Object.keys(blur).map((blurKey: any) => {
+    isFormatted = true
+    result += `${blurKey}_${blur[blurKey]},`
   })
 
   if (result.length > 0 && result[result.length - 1] === ',') {

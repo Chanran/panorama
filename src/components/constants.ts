@@ -16,6 +16,10 @@ export const SPHERE_LOW_SHARPEN = [{
 }]
 
 export const SPHERE_ORIGIN_SHARPEN = [{
+  // blur: {
+  //   r: 10,
+  //   s: 10
+  // },
   resize: {
     w: 4096,
     h: 2048

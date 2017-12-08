@@ -146,7 +146,7 @@ export class Viewer {
         this._renderer.render(this._scene, this._camera)
         successCallback && successCallback()
       }
-      this._sphere = new Sphere(radius)
+      this._sphere = new Sphere(radius, this._dom)
       this._sphere.loadTextureImage(src, imageConfig, success, progressCallback, errorCallback)
       this._scene.add(this._sphere)
     } else {
@@ -154,7 +154,7 @@ export class Viewer {
       const onMixUpdate = (progress: number) => {
         if (flag) {
           console.log(flag);
-          this._camera.rotation.y += Math.PI / 2
+          // this._camera.rotation.y += Math.PI / 2
           flag = false
         }
       }

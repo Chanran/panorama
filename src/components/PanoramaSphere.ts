@@ -7,7 +7,7 @@ import {
 const TWEEN: any = require('@tweenjs/tween.js')
 
 import oss from '../Utils/oss'
-import { Texture, Mesh, NearestFilter, LinearFilter, SphereGeometry, Event, DoubleSide, ShaderMaterial, RepeatWrapping } from 'three';
+import { Texture, Mesh, NearestFilter, LinearFilter, SphereGeometry, Event, DoubleSide, ShaderMaterial, RepeatWrapping, Vector2 } from 'three';
 
 export default class PanoramaSphere extends Mesh {
 
@@ -22,11 +22,16 @@ export default class PanoramaSphere extends Mesh {
 
   constructor (
     radius = 100,
+    dom: HTMLElement = document.body
   ) {
     super()
     this._radius = radius
     this.geometry = new SphereGeometry(this._radius, 60, 40)
     this.geometry.scale(-1, 1, 1);
+    let resolution = {
+      w: dom.clientWidth,
+      h: dom.clientHeight
+    }
     this.material = new ShaderMaterial({
       uniforms: {
         texture0: {
@@ -39,6 +44,10 @@ export default class PanoramaSphere extends Mesh {
           type: 'f',
           value: 1.0
         },
+        resolution: {
+          type: 'v',
+          value: new Vector2(resolution.w, resolution.h)
+        }
       },
       vertexShader: [
         'varying vec2 uvVec2;',
@@ -52,11 +61,37 @@ export default class PanoramaSphere extends Mesh {
         'uniform sampler2D texture0;',
         'uniform sampler2D texture1;',
         'uniform float alpha;',
+        'uniform vec2 resolution;',
         'varying vec2 uvVec2;',
         'void main() {',
         '  vec4 t0 = texture2D(texture0,uvVec2);',
         '  vec4 t1 = texture2D(texture1,uvVec2);',
-        '  gl_FragColor = mix(t0,t1,alpha);',
+        '  gl_FragColor = mix(t0, t1, alpha);',
+          // 'if (alpha < 1.0) {',
+          //   'float sRadius = sqrt(pow(resolution.x, 2.0) + pow(resolution.y, 2.0)) / 2.0;',  // screen half of Diagonal
+          //   'float iRadius = sRadius * (alpha * 0.9 );', // inner circle radius
+          //   'float oRadius = sRadius * alpha;',  // outer circle radius
+          //   'float ioDistance = oRadius - iRadius;',
+          //   'float vDistance = distance(gl_FragCoord.xy, resolution / 2.0);',
+          //   'if (vDistance < iRadius) {',
+          //     'gl_FragColor = mix(t0,t1,1.0);',
+          //   '} else if ( vDistance < oRadius && vDistance > iRadius ) {',
+          //     'float tmpAlpha = 1.0 - (vDistance - iRadius) / ioDistance;',
+          //     'gl_FragColor = mix(t0,t1,tmpAlpha);',
+          //   '} else {',
+          //     'gl_FragColor = mix(t0,t1,0.0);',
+          //   '}',
+          // '}',
+          // '} else {',
+            // 'if (alpha <= 0.2) {',
+            //   'gl_FragColor = mix(t0, t1, alpha);',
+            // '} else if (alpha >=0.8) {',
+            // '  gl_FragColor = mix(t0,t1,alpha);',
+            // '} else {',
+            // '  vec4 white = vec4(0, 0.25, 0.88, 0.4);',
+            // '  gl_FragColor = mix(white, t1, 0.1);',
+            // '}',
+          // '}',
         '}'
       ].join('\n'),
       wireframe: false,
@@ -145,9 +180,11 @@ export default class PanoramaSphere extends Mesh {
     let alpha = {
       value: 0
     }
+    console.log('alpha:', alpha.value);
     new TWEEN.Tween(alpha)
-        .to({value: 1}, 3000)
-        .easing(TWEEN.Easing.Cubic.Out)
+        .to({value: 1}, 800)
+        .easing(TWEEN.Easing.Cubic.InOut)
+        // .easing(TWEEN.Easing.Linear.None)
         .onUpdate(() => {
           console.log(alpha.value);
           this.material.uniforms.alpha.value = alpha.value
