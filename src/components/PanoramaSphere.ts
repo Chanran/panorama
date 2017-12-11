@@ -29,8 +29,8 @@ export default class PanoramaSphere extends Mesh {
     this.geometry = new SphereGeometry(this._radius, 60, 40)
     this.geometry.scale(-1, 1, 1);
     let resolution = {
-      w: dom.clientWidth,
-      h: dom.clientHeight
+      w: 4096, //dom.clientWidth,
+      h: 2048 //dom.clientHeight
     }
     this.material = new ShaderMaterial({
       uniforms: {
@@ -47,6 +47,10 @@ export default class PanoramaSphere extends Mesh {
         resolution: {
           type: 'v',
           value: new Vector2(resolution.w, resolution.h)
+        },
+        direction: {
+          type: 'v',
+          value: new Vector2(1, 1)
         }
       },
       vertexShader: [
@@ -60,38 +64,43 @@ export default class PanoramaSphere extends Mesh {
         'precision mediump float;',
         'uniform sampler2D texture0;',
         'uniform sampler2D texture1;',
+        'varying vec2 uvVec2;',
         'uniform float alpha;',
         'uniform vec2 resolution;',
-        'varying vec2 uvVec2;',
+        'vec4 blur5(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {',
+        '  vec4 color = vec4(0.0);',
+        '  vec2 off1 = vec2(1.3333333333333333) * direction;',
+        '  //color += texture2D(image, uv) * 1.0;',
+        '  color += texture2D(image, uv + (off1 / resolution)) * 0.5;',
+        '  color += texture2D(image, uv - (off1 / resolution)) * 0.5;',
+        '  return color;',
+        '}',
+        'vec4 blurtest(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {',
+        '  vec4 color = vec4(0.0);',
+        '  vec2 off1 = vec2(1.3333333333333333) * direction;',
+        '  //color += texture2D(image, uv) * 1.0;',
+        '  color += texture2D(image, uv + (off1 / resolution)) * 0.25;',
+        '  color += texture2D(image, uv - (off1 / resolution)) * 0.25;',
+        '  return color;',
+        '}',
         'void main() {',
         '  vec4 t0 = texture2D(texture0,uvVec2);',
         '  vec4 t1 = texture2D(texture1,uvVec2);',
-        // '  gl_FragColor = mix(t0, t1, alpha);',
-          'if (alpha < 1.0) {',
-            'float sRadius = sqrt(pow(resolution.x, 2.0) + pow(resolution.y, 2.0)) / 2.0;',  // screen half of Diagonal
-            'float iRadius = sRadius * (alpha * 0.5 );', // inner circle radius
-            'float oRadius = sRadius * alpha;',  // outer circle radius
-            'float ioDistance = oRadius - iRadius;',
-            'float vDistance = distance(gl_FragCoord.xy, resolution / 2.0);',
-            'if (vDistance < iRadius) {',
-              'gl_FragColor = mix(t0,t1,1.0);',
-            '} else if ( vDistance < oRadius && vDistance > iRadius ) {',
-              'float tmpAlpha = 1.0 - (vDistance - iRadius) / ioDistance;',
-              'gl_FragColor = mix(t0,t1,tmpAlpha);',
-            '} else {',
-              'gl_FragColor = mix(t0,t1,0.0);',
-            '}',
-          '}',
-          // '} else {',
-          //   'if (alpha <= 0.2) {',
-          //     'gl_FragColor = mix(t0, t1, alpha);',
-          //   '} else if (alpha >=0.8) {',
-          //   '  gl_FragColor = mix(t0,t1,alpha);',
-          //   '} else {',
-          //   '  vec4 white = vec4(0, 0.25, 0.88, 0.4);',
-          //   '  gl_FragColor = mix(white, t1, 0.1);',
-          //   '}',
-          // '}',
+        // '  if (alpha < 0.3 || alpha > 0.7) {',
+        // '    gl_FragColor = mix(t0, t1, alpha);',
+        // '  } else {',
+        '    vec4 blurT0 = texture2D(texture0, uvVec2) / 4.0;',
+        '    vec4 blurT1 = vec4(0.0);',
+        '    blurT0 += 1.0 / 4.0 * blur5(texture0, uvVec2, resolution, vec2(1,0));',
+        '    blurT0 += 1.0 / 4.0 * blur5(texture0, uvVec2, resolution, vec2(0,1));',
+        '    blurT0 += 1.0 / 4.0 * blurtest(texture0, uvVec2, resolution, vec2(1,1));',
+        '    blurT0 += 1.0 / 4.0 * blurtest(texture0, uvVec2, resolution, vec2(1,-1));',
+        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,0));',
+        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(0,1));',
+        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,1));',
+        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,-1));',
+        '    gl_FragColor = mix(blurT0, blurT1, alpha);',
+        // '  }',
         '}'
       ].join('\n'),
       wireframe: false,
@@ -183,8 +192,8 @@ export default class PanoramaSphere extends Mesh {
     console.log('alpha:', alpha.value);
     new TWEEN.Tween(alpha)
         .to({value: 1}, 800)
-        // .easing(TWEEN.Easing.Cubic.InOut)
-        .easing(TWEEN.Easing.Linear.None)
+        .easing(TWEEN.Easing.Cubic.InOut)
+        // .easing(TWEEN.Easing.Linear.None)
         .onUpdate(() => {
           console.log(alpha.value);
           this.material.uniforms.alpha.value = alpha.value
