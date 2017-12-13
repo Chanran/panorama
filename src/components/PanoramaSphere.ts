@@ -7,14 +7,14 @@ import {
 const TWEEN: any = require('@tweenjs/tween.js')
 
 import oss from '../Utils/oss'
-import { Texture, Mesh, NearestFilter, LinearFilter, SphereGeometry, Event, DoubleSide, ShaderMaterial, RepeatWrapping, Vector2 } from 'three';
+import { Texture, Mesh, NearestFilter, LinearFilter, SphereGeometry, Event, DoubleSide, ShaderMaterial, RepeatWrapping, Vector2, PlaneGeometry } from 'three';
 
 export default class PanoramaSphere extends Mesh {
 
   private _radius: number
   private _sphereTexture: Texture
   public material: ShaderMaterial
-  public geometry: SphereGeometry
+  public geometry: SphereGeometry | any
 
   private _successCallback: Function
   private _progressCallback: Function
@@ -27,7 +27,7 @@ export default class PanoramaSphere extends Mesh {
     super()
     this._radius = radius
     this.geometry = new SphereGeometry(this._radius, 60, 40)
-    this.geometry.scale(-1, 1, 1);
+    // this.geometry.scale(-1, 1, 1);
     let resolution = {
       w: 4096, //dom.clientWidth,
       h: 2048 //dom.clientHeight
@@ -51,12 +51,12 @@ export default class PanoramaSphere extends Mesh {
         direction: {
           type: 'v',
           value: new Vector2(1, 1)
-        }
+        },
       },
       vertexShader: [
-        'varying vec2 uvVec2;',
+        'varying vec2 vUv;',
         'void main () {',
-        '  uvVec2 = uv;',
+        '  vUv = uv;',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1);',
         '}'
       ].join('\n'),
@@ -64,43 +64,36 @@ export default class PanoramaSphere extends Mesh {
         'precision mediump float;',
         'uniform sampler2D texture0;',
         'uniform sampler2D texture1;',
-        'varying vec2 uvVec2;',
+        'varying vec2 vUv;',
         'uniform float alpha;',
         'uniform vec2 resolution;',
-        'vec4 blur5(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {',
-        '  vec4 color = vec4(0.0);',
-        '  vec2 off1 = vec2(1.3333333333333333) * direction;',
-        '  //color += texture2D(image, uv) * 1.0;',
-        '  color += texture2D(image, uv + (off1 / resolution)) * 0.5;',
-        '  color += texture2D(image, uv - (off1 / resolution)) * 0.5;',
-        '  return color;',
-        '}',
-        'vec4 blurtest(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {',
-        '  vec4 color = vec4(0.0);',
-        '  vec2 off1 = vec2(1.3333333333333333) * direction;',
-        '  //color += texture2D(image, uv) * 1.0;',
-        '  color += texture2D(image, uv + (off1 / resolution)) * 0.25;',
-        '  color += texture2D(image, uv - (off1 / resolution)) * 0.25;',
-        '  return color;',
-        '}',
         'void main() {',
-        '  vec4 t0 = texture2D(texture0,uvVec2);',
-        '  vec4 t1 = texture2D(texture1,uvVec2);',
-        // '  if (alpha < 0.3 || alpha > 0.7) {',
-        // '    gl_FragColor = mix(t0, t1, alpha);',
-        // '  } else {',
-        '    vec4 blurT0 = texture2D(texture0, uvVec2) / 4.0;',
-        '    vec4 blurT1 = vec4(0.0);',
-        '    blurT0 += 1.0 / 4.0 * blur5(texture0, uvVec2, resolution, vec2(1,0));',
-        '    blurT0 += 1.0 / 4.0 * blur5(texture0, uvVec2, resolution, vec2(0,1));',
-        '    blurT0 += 1.0 / 4.0 * blurtest(texture0, uvVec2, resolution, vec2(1,1));',
-        '    blurT0 += 1.0 / 4.0 * blurtest(texture0, uvVec2, resolution, vec2(1,-1));',
-        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,0));',
-        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(0,1));',
-        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,1));',
-        '    blurT1 += 1.0 / 4.0 * blur5(texture1, uvVec2, resolution, vec2(1,-1));',
-        '    gl_FragColor = mix(blurT0, blurT1, alpha);',
-        // '  }',
+        '  vec4 t0 = texture2D(texture0,vUv);',
+        '  vec4 t1 = texture2D(texture1,vUv);',
+        '  vec4 sum = vec4( 0.0 );',
+        '  sum += texture2D( texture0, vec2( vUv.x - 4.0 / resolution.x, vUv.y ) ) * 0.051;',
+        '  sum += texture2D( texture0, vec2( vUv.x - 3.0 / resolution.x, vUv.y ) ) * 0.0918;',
+        '  sum += texture2D( texture0, vec2( vUv.x - 2.0 / resolution.x, vUv.y ) ) * 0.12245;',
+        '  sum += texture2D( texture0, vec2( vUv.x - 1.0 / resolution.x, vUv.y ) ) * 0.1531;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y ) ) * 0.1633;',
+        '  sum += texture2D( texture0, vec2( vUv.x + 1.0 / resolution.x, vUv.y ) ) * 0.1531;',
+        '  sum += texture2D( texture0, vec2( vUv.x + 2.0 / resolution.x, vUv.y ) ) * 0.12245;',
+        '  sum += texture2D( texture0, vec2( vUv.x + 3.0 / resolution.x, vUv.y ) ) * 0.0918;',
+        '  sum += texture2D( texture0, vec2( vUv.x + 4.0 / resolution.x, vUv.y ) ) * 0.051;',
+
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y - 4.0 / resolution.y ) ) * 0.051;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y - 3.0 / resolution.y ) ) * 0.0918;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y - 2.0 / resolution.y ) ) * 0.12245;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y - 1.0 / resolution.y ) ) * 0.1531;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y ) ) * 0.1633;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y + 1.0 / resolution.y ) ) * 0.1531;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y + 2.0 / resolution.y ) ) * 0.12245;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y + 3.0 / resolution.y ) ) * 0.0918;',
+        '  sum += texture2D( texture0, vec2( vUv.x, vUv.y + 4.0 / resolution.y ) ) * 0.051;',
+  
+
+        '  gl_FragColor = sum / 2.0;',
+        // '  gl_FragColor = mix(t0, t1, alpha);',
         '}'
       ].join('\n'),
       wireframe: false,
