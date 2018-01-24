@@ -1,5 +1,6 @@
 {
   "littlePlanet": false,
   "autoRotate": false,
+  "stats": false,
   "radius": 100
 }
